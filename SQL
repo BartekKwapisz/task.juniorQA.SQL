@@ -1,0 +1,60 @@
+/*1. Stwórz tabelę, która będzie przechowywać dane o pracownikach: imię, nazwisko, data urodzenia, kwota 
+wynagrodzenia oraz początek i koniec zatrudnienia:*/
+
+CREATE TABLE employees (
+user_id INT(11) not null PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(128) not null,
+surname VARCHAR(128) not null,
+birthday DATE not null,
+salary INT(11) not null,
+job_start DATE not null,
+job_end DATE 
+);
+
+/*fill the employees table with some values:*/
+
+INSERT INTO employees (name, surname, birthday, salary, job_start, job_end) VALUES ("Bob", "Builder", "1997-08-23", "3248", "2011-09-01", "2017-09-01"), ("Robert", "Majewski", "1977-01-11", "4000", "2017-10-01", NULL), ("Bob", "Destroyer", "1997-09-01", "8439", "2011-11-01", "2020-08-01"), ("Max", "Stopka", "1997-01-20", "4785", "2016-11-01", "2021-08-01"), ("Max", "Stirner", "1997-01-20", "4785", "2016-11-01", "2019-06-01");
+
+/*2. Stwórz widok zmaterializowany prezentujący aktualnie zatrudnionych pracowników (imię, nazwisko oraz kwota wynagrodzenia):*/
+
+CREATE /*MATERIALIZED*/ VIEW current_employees AS
+SELECT name, surname, salary
+FROM employees
+WHERE job_end IS NULL;
+
+/*^MySQL doesn't support MATERIALIZED VIEW, so I omit the word 'MATERIALIZED'*/
+
+SELECT * FROM current_employees;
+
+/*^just to show this view, this line is not necessary*/
+
+/*3. Stwórz widok – raport pokazujący liczbę pracowników zatrudnionych w kolejnych latach*/
+
+/*unifinished, need to add while loop for counter*/
+
+DELIMITER //  
+CREATE PROCEDURE doWhile()   
+BEGIN
+ 
+SET @counter:= 2020; /*change into current year*/
+SELECT `job_end`, COUNT(*) AS `number of employees` 
+    FROM employees
+    WHERE YEAR(job_end) > @counter OR YEAR(job_end) IS NULL
+
+ UNION ALL
+
+SELECT `job_end`, COUNT(*) AS `number of employees` 
+    FROM employees
+    WHERE YEAR(job_end) > @counter-1 OR YEAR(job_end) IS NULL
+
+  UNION ALL
+
+SELECT `job_end`, COUNT(*) AS `number of employees` 
+    FROM employees
+    WHERE YEAR(job_end) > @counter-2 OR YEAR(job_end) IS NULL;  
+
+END
+//  
+DELIMITER ;
+
+CALL doWhile();
